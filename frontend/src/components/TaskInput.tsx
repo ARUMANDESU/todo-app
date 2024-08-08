@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {domain} from "../../wailsjs/go/models";
 import {CreateTask} from "../../wailsjs/go/main/App";
 import {Label} from "@/components/ui/label";
@@ -21,26 +21,29 @@ export type TaskInputProps = {
 }
 
 function TaskInput({onTaskCreate}: TaskInputProps) {
-    const [dueDate, setDueDate] = useState<string>()
+    const taskInputRef = useRef<HTMLInputElement>(null);
+    const [title, setTitle] = useState<string>("");
+    const [priority, setPriority] = useState<string>("none");
+    const [dueDate, setDueDate] = useState<string>("");
 
     const handleSubmit = async (e: any) => {
-        e.preventDefault()
-        const formData = new FormData(e.target)
+        e.preventDefault();
 
-        if (!formData.get("title") || !formData.get("priority")) {
-            toast.error("Please fill all fields")
-            return
+        if (!title || !priority) {
+            toast.error("Please fill all fields");
+            return;
         }
 
-        const dueDateString = formData.get("dueDate") as string
-
         const newTask = await CreateTask(domain.CreateTaskRequest.createFrom({
-            title: formData.get("title") as string,
-            priority: formData.get("priority") as domain.TaskPriority,
-            due_date: dueDateString ? new Date(dueDateString).toISOString() : null
-        }))
-        onTaskCreate(newTask)
-        e.target.reset()
+            title: title,
+            priority: priority as domain.TaskPriority,
+            due_date: dueDate ? new Date(dueDate).toISOString() : null
+        }));
+        onTaskCreate(newTask);
+        setTitle("");
+        setPriority("none");
+        setDueDate("");
+        taskInputRef.current?.focus();
     }
 
     return (
@@ -49,11 +52,20 @@ function TaskInput({onTaskCreate}: TaskInputProps) {
                 <div className="flex flex-row w-full">
                     <div className="space-y-2 w-full">
                         <Label htmlFor="title">Task Name</Label>
-                        <Input id="title" name="title" placeholder="Enter task title" required className="w-full"/>
+                        <Input
+                            id="title"
+                            name="title"
+                            placeholder="Enter task title"
+                            required
+                            className="w-full"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            ref={taskInputRef}
+                        />
                     </div>
                     <div className="space-y-2 mx-2">
                         <Label htmlFor="priority">Priority</Label>
-                        <Select name="priority" defaultValue="none">
+                        <Select name="priority" value={priority} onValueChange={setPriority}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select priority"/>
                             </SelectTrigger>

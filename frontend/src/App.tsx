@@ -8,6 +8,13 @@ import {PriorityBadge} from "@/components/PriorityBadge";
 import {Button} from "@/components/ui/button";
 import {RefreshCwIcon} from "lucide-react";
 
+const priorityMap: { [key: string]: number } = {
+    high: 3,
+    medium: 2,
+    low: 1,
+    none: 0
+};
+
 function App() {
     const [tasks, setTasks] = useState<domain.Task[]>([])
     const [currentTask, setCurrentTask] = useState<domain.Task | null>(null)
@@ -43,6 +50,7 @@ function App() {
     useEffect(() => {
         fetchAllTasks()
     }, [])
+
     return (
         <div className="min-h-screen h-full">
             <div className="grid grid-cols-[1fr_300px] gap-8 p-8">
@@ -61,6 +69,7 @@ function App() {
                             <div className="space-y-2">
                                 {tasks
                                     .filter((task) => task.status === "todo")
+                                    .sort((a, b) => priorityMap[b.priority] - priorityMap[a.priority])
                                     .map((task, index) => (
                                         <TaskItem
                                             key={index}

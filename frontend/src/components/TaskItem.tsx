@@ -23,7 +23,6 @@ const priorityColors: { [key: string]: string } = {
 };
 
 function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps) {
-
     const markTaskDone = (task: domain.Task) => {
         const request = domain.UpdateTaskRequest.createFrom(
             {
@@ -56,18 +55,25 @@ function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps)
                 <CardContent className="flex justify-between items-center p-3">
                     <div className="flex justify-start w-full" onClick={() => onClick(task)}>
                         {task.status === TaskStatus.DONE ?
-                            (<SquareX  className="text-muted-foreground hover:bg-primary/20" onClick={() => markTaskDone(task)}/> ) :
+                            (<SquareX className="text-muted-foreground hover:bg-primary/20"
+                                      onClick={() => markTaskDone(task)}/>) :
                             (<Square className={priorityColors[task.priority]} onClick={() => markTaskDone(task)}/>)
                         }
-                        <div className="font-medium">{task.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                            Due: {task.due_date}
-                            <span className="ml-2">
-                                <PriorityBadge priority={task.priority}/>
-                            </span>
-                        </div>
+                        <div className={`font-medium px-2.5 ${task.status  === TaskStatus.DONE && " line-through "}`}>{task.title}</div>
+                        <span className="ml-2 ">
+                            <PriorityBadge priority={task.priority}/>
+                        </span>
                     </div>
-                    <Trash  onClick={()=>{deleteTask(task)}}/>
+                    <div className="flex justify-end items-center w-full">
+                        <p className="text-muted-foreground text-sm px-2.5">
+                            {task.due_date ? new Date(task.due_date).toDateString() : ""}
+                        </p>
+                        <Trash
+                            className={`hover:text-red-500`}
+                            onClick={() => {deleteTask(task)}}
+                        />
+                    </div>
+
                 </CardContent>
             </Card>
         </>
