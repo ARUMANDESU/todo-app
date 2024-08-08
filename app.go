@@ -62,7 +62,7 @@ func (a *App) UpdateTask(request domain.UpdateTaskRequest) (domain.Task, error) 
 
 func (a *App) DeleteTask(id string) error {
 	if !a.confirmDeleteTask() {
-		return nil
+		return domain.ErrCancelled
 	}
 
 	return a.taskService.Delete(a.ctx, id)

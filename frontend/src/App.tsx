@@ -16,9 +16,16 @@ function App() {
         setCurrentTask(task)
     }
 
-    const handleRefresh = async () => {
-        const tasks = await GetAllTasks()
-        setTasks(tasks)
+    const fetchAllTasks = async () => {
+        try {
+            const tasks = await GetAllTasks()
+            if (tasks === null) {
+                return
+            }
+            setTasks(tasks)
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     const handleTaskUpdate = (task: domain.Task) => {
@@ -26,15 +33,15 @@ function App() {
     }
 
     const handleTaskDelete = (task: domain.Task) => {
+        if (currentTask && currentTask.id === task.id) {
+            setCurrentTask(null)
+        }
         setTasks(tasks.filter((t) => t.id !== task.id))
     }
 
 
     useEffect(() => {
-        (async () => {
-            const tasks = await GetAllTasks()
-            setTasks(tasks)
-        })()
+        fetchAllTasks()
     }, [])
     return (
         <div className="min-h-screen h-full">
@@ -42,7 +49,7 @@ function App() {
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-bold">Todo App</h1>
-                        <Button variant="outline" onClick={handleRefresh}>
+                        <Button variant="outline" onClick={fetchAllTasks}>
                             <RefreshCwIcon className="h-4 w-4 mr-2"/>
                             Refresh
                         </Button>
