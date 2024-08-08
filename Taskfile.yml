@@ -1,0 +1,26 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - echo "Building..."
+      - wails build
+      - echo "Done!"
+
+  dev:
+    cmds:
+      - echo "Starting dev app..."
+      - wails dev
+      - echo "Done!"
+
+  migrate:up:
+    cmds:
+      - echo "Migrating..."
+      - migrate -path ./db/sqlite/migrations -database sqlite3://db/sqlite/tasks.db up
+      - echo "Done!"
+
+  migrate:down:
+    cmds:
+      - echo "Rolling back..."
+      - migrate -path ./db/sqlite/migrations -database sqlite3://db/sqlite/tasks.db down
+      - echo "Done!"
