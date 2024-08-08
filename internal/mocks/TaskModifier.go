@@ -42,7 +42,7 @@ func (_m *TaskModifier) CreateTask(task domain.Task) (domain.Task, error) {
 }
 
 // DeleteTask provides a mock function with given fields: id
-func (_m *TaskModifier) DeleteTask(id int) error {
+func (_m *TaskModifier) DeleteTask(id string) error {
 	ret := _m.Called(id)
 
 	if len(ret) == 0 {

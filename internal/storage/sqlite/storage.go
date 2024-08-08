@@ -114,7 +114,7 @@ func (s Storage) UpdateTask(request domain.Task) (domain.Task, error) {
 	return request, nil
 }
 
-func (s Storage) DeleteTask(id int) error {
+func (s Storage) DeleteTask(id string) error {
 	const op = "storage.sqlite.task.delete"
 
 	stmt, err := s.db.Prepare(`DELETE FROM tasks WHERE id = ?`)

@@ -24,7 +24,7 @@
 <!-- TECHNOLOGIES USED -->
 ## Technologies Used
 
-[![Go][go-shield]][go-url] [![Wails][wails-shield]][wails-url]  [![Sqlite][sqlite-shield]][sqlite-url]  [![Typescript][typescript-shield]][typescript-url] [![React][react-shield]][react-url] [![Tailwind CSS][tailwind-shield]][tailwind-url]
+[![Go][go-shield]][go-url] [![Wails][wails-shield]][wails-url]  [![Sqlite][sqlite-shield]][sqlite-url]  [![Typescript][typescript-shield]][typescript-url] [![React][react-shield]][react-url] [![Tailwind CSS][tailwind-shield]][tailwind-url] [![Shadcn][shadcn-shield]][shadcn-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -86,3 +86,7 @@ Clone the repository:
 
 [tailwind-url]: https://tailwindcss.com/
 [tailwind-shield]: https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
+
+[shadcn-url]: https://shadcn.com/
+[shadcn-shield]:
+https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui&logoColor=white

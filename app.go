@@ -20,7 +20,7 @@ type TaskService interface {
 	GetByID(id int) (domain.Task, error)
 	Create(request domain.CreateTaskRequest) (domain.Task, error)
 	Update(request domain.UpdateTaskRequest) (domain.Task, error)
-	Delete(id int) error
+	Delete(id string) error
 }
 
 // NewApp creates a new App application struct
@@ -58,7 +58,7 @@ func (a *App) UpdateTask(request domain.UpdateTaskRequest) (domain.Task, error) 
 	return a.taskService.Update(request)
 }
 
-func (a *App) DeleteTask(id int) error {
+func (a *App) DeleteTask(id string) error {
 	if !a.confirmDeleteTask() {
 		return nil
 	}

@@ -27,7 +27,7 @@ type TaskProvider interface {
 type TaskModifier interface {
 	CreateTask(task domain.Task) (domain.Task, error)
 	UpdateTask(task domain.Task) (domain.Task, error)
-	DeleteTask(id int) error
+	DeleteTask(id string) error
 }
 
 func NewTask(provider TaskProvider, modifier TaskModifier) Task {
@@ -38,20 +38,31 @@ func NewTask(provider TaskProvider, modifier TaskModifier) Task {
 }
 
 func (t Task) GetAll() ([]domain.Task, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "service.task.get_all"
+
+	tasks, err := t.provider.GetAllTasks()
+	if err != nil {
+		return nil, handleError(op, err)
+	}
+
+	return tasks, nil
 }
 
 func (t Task) GetByID(id int) (domain.Task, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "service.task.get_by_id"
+
+	task, err := t.provider.GetTaskByID(id)
+	if err != nil {
+		return domain.Task{}, handleError(op, err)
+	}
+
+	return task, nil
 }
 
 func (t Task) Create(request domain.CreateTaskRequest) (domain.Task, error) {
 	const op = "service.task.create"
 	err := validation.ValidateStruct(&request,
 		validation.Field(&request.Title, validation.Required, validation.By(validateTitle)),
-		validation.Field(&request.Priority, validation.Required),
 		validation.Field(&request.DueDate, validation.By(validateDueDate)),
 	)
 	if err != nil {
@@ -64,7 +75,7 @@ func (t Task) Create(request domain.CreateTaskRequest) (domain.Task, error) {
 	}
 
 	task := domain.Task{
-		ID:         uid,
+		ID:         uid.String(),
 		Title:      strings.Trim(request.Title, " "),
 		Status:     domain.TaskStatusTodo,
 		Priority:   request.Priority,
@@ -86,9 +97,15 @@ func (t Task) Update(request domain.UpdateTaskRequest) (domain.Task, error) {
 	panic("implement me")
 }
 
-func (t Task) Delete(id int) error {
-	//TODO implement me
-	panic("implement me")
+func (t Task) Delete(id string) error {
+	const op = "service.task.delete"
+
+	err := t.modifier.DeleteTask(id)
+	if err != nil {
+		return handleError(op, err)
+	}
+
+	return nil
 }
 
 func handleError(op string, err error) error {

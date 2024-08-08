@@ -1,12 +1,18 @@
 export namespace domain {
 	
+	export enum TaskPriority {
+	    NONE = "",
+	    LOW = "low",
+	    MEDIUM = "medium",
+	    HIGH = "high",
+	}
 	export enum TaskStatus {
 	    TODO = "todo",
 	    DONE = "done",
 	}
 	export class CreateTaskRequest {
 	    title: string;
-	    priority: string;
+	    priority: TaskPriority;
 	    // Go type: time
 	    due_date?: any;
 	
@@ -40,10 +46,10 @@ export namespace domain {
 		}
 	}
 	export class Task {
-	    id: number[];
+	    id: string;
 	    title: string;
 	    status: TaskStatus;
-	    priority: string;
+	    priority: TaskPriority;
 	    // Go type: time
 	    due_date?: any;
 	    // Go type: time
@@ -88,7 +94,7 @@ export namespace domain {
 	    id: number;
 	    title: string;
 	    status: TaskStatus;
-	    priority: string;
+	    priority: TaskPriority;
 	    // Go type: time
 	    due_date?: any;
 	
