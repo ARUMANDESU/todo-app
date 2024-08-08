@@ -1,9 +1,7 @@
 import React from 'react';
 import {domain} from "../../wailsjs/go/models";
-import {Card, CardContent} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {Trash} from "lucide-react";
-import {Input} from "@/components/ui/input";
+import {Card, CardContent} from '@/components/ui/card';
+import {Square, Trash} from "lucide-react";
 import {DeleteTask} from "../../wailsjs/go/main/App";
 import {toast} from "sonner";
 import {PriorityBadge} from "@/components/PriorityBadge";
@@ -12,6 +10,7 @@ import TaskStatus = domain.TaskStatus;
 export type TaskItemProps = {
     task: domain.Task;
     onClick: (task: domain.Task) => void;
+    onUpdate: (task: domain.Task) => void;
     isCurrent: boolean;
 }
 
@@ -22,10 +21,12 @@ const priorityColors: { [key: string]: string } = {
     normal: "text-blue-500"
 };
 
-function TaskItem({task, onClick, isCurrent}: TaskItemProps) {
+function TaskItem({task, onClick, isCurrent, onUpdate}: TaskItemProps) {
 
     const markTaskDone = (task: domain.Task) => {
-
+        // TODO: change logic to update task status
+        task.status = task.status === TaskStatus.DONE ? TaskStatus.TODO : TaskStatus.DONE
+        onUpdate(task)
     }
 
     const deleteTask = (task: domain.Task) => {
@@ -41,9 +42,9 @@ function TaskItem({task, onClick, isCurrent}: TaskItemProps) {
     return (
         <>
             <Card className={`cursor-pointer ${ isCurrent ? "bg-muted" : "hover:bg-muted"}`}>
-                <CardContent className="flex justify-between items-center">
+                <CardContent className="flex justify-between items-center p-3">
                     <div className="flex justify-start w-full" onClick={() => onClick(task)}>
-                        <Input type="checkbox" checked={task.status == TaskStatus.DONE} onChange={() => markTaskDone(task)}/>
+                        <Square onClick={()=>markTaskDone(task)}/>
                         <div className="font-medium">{task.title}</div>
                         <div className="text-sm text-muted-foreground">
                             Due: {task.due_date}
@@ -52,9 +53,7 @@ function TaskItem({task, onClick, isCurrent}: TaskItemProps) {
                             </span>
                         </div>
                     </div>
-                    <Button onClick={()=>{deleteTask(task)}}>
-                        <Trash />
-                    </Button>
+                    <Trash  onClick={()=>{deleteTask(task)}}/>
                 </CardContent>
             </Card>
         </>

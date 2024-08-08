@@ -4,4 +4,4 @@ frontend/dist
 
 .env
 .env.local
-*/*.db
+**/*.db

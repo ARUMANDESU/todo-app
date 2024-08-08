@@ -21,6 +21,10 @@ function App() {
         setTasks(tasks)
     }
 
+    const handleTaskUpdate = (task: domain.Task) => {
+        setTasks(tasks.map((t) => t.id === task.id ? task : t))
+    }
+
 
     useEffect(() => {
         (async () => {
@@ -29,7 +33,7 @@ function App() {
         })()
     }, [])
     return (
-        <div className="h-screen">
+        <div id="App" className="h-screen">
             <div className="grid grid-cols-[1fr_300px] gap-8 p-8">
                 <div>
                     <div className="flex items-center justify-between mb-4">
@@ -52,6 +56,7 @@ function App() {
                                             task={task}
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
+                                            onUpdate={handleTaskUpdate}
                                         />
                                     ))}
                             </div>
@@ -67,6 +72,7 @@ function App() {
                                             task={task}
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
+                                            onUpdate={handleTaskUpdate}
                                         />
                                     ))}
                             </div>
