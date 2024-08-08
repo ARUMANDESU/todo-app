@@ -1,26 +1,43 @@
 import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
 import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import {CreateTask, Greet} from "../wailsjs/go/main/App";
+import {domain} from "../wailsjs/go/models";
 
 function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+    const [tasks, setTasks] = useState<domain.Task[]>([]);
+    const [title, setTitle] = useState("")
+    const updateTitle = (event: any) => setTitle(event.target.value);
+    const createTask = () => {
+        const task = domain.CreateTaskRequest.createFrom(
+            {
+                title: title,
+                priority: "normal",
+                due_date: null
+            }
+        );
 
-    function greet() {
-        Greet(name).then(updateResultText);
+        CreateTask(task).then(addNewTask);
+    }
+
+    const addNewTask = (task: domain.Task) => {
+        setTasks([...tasks, task]);
     }
 
     return (
         <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
+            <div>
+                <h1>Todo App</h1>
+                <input type="text" placeholder="Enter Task title" value={title} onChange={updateTitle}/>
+                <button onClick={createTask}>Create Task</button>
             </div>
+            {tasks.map((task, index) => (
+                <div key={index} className="flex flex-col border border-gray-200 p-4 m-4">
+                    <h3>{task.title}</h3>
+                    <p>{task.status}</p>
+                    <p>{task.priority}</p>
+                    {task.due_date && <p>{task.due_date}</p>}
+                </div>
+            ))}
         </div>
     )
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/ARUMANDESU/todo-app/internal/domain"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
+	"time"
 )
 
 type Storage struct {
@@ -25,7 +26,7 @@ func NewStorage() *Storage {
 	return &Storage{db: db}
 }
 
-func (s Storage) GetAll() ([]domain.Task, error) {
+func (s Storage) GetAllTasks() ([]domain.Task, error) {
 	const op = "storage.sqlite.task.get_all"
 
 	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at FROM tasks`)
@@ -52,7 +53,7 @@ func (s Storage) GetAll() ([]domain.Task, error) {
 	return tasks, nil
 }
 
-func (s Storage) GetByID(id int) (domain.Task, error) {
+func (s Storage) GetTaskByID(id int) (domain.Task, error) {
 	const op = "storage.sqlite.task.get_by_id"
 
 	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at  FROM tasks WHERE id = ?`)
@@ -72,7 +73,7 @@ func (s Storage) GetByID(id int) (domain.Task, error) {
 	return task, nil
 }
 
-func (s Storage) Create(task domain.Task) (domain.Task, error) {
+func (s Storage) CreateTask(request domain.Task) (domain.Task, error) {
 	const op = "storage.sqlite.task.create"
 
 	stmt, err := s.db.Prepare(`INSERT INTO tasks(id, title, status, priority, due_date, created_at, modified_at) VALUES(?, ?, ?, ?, ?, ?, ?)`)
@@ -80,15 +81,15 @@ func (s Storage) Create(task domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = stmt.Exec(task.ID, task.Title, task.Status, task.Priority, task.DueDate, task.CreatedAt, task.ModifiedAt)
+	_, err = stmt.Exec(request.ID, request.Title, request.Status, request.Priority, request.DueDate, request.CreatedAt, request.ModifiedAt)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return task, nil
+	return request, nil
 }
 
-func (s Storage) Update(task domain.Task) (domain.Task, error) {
+func (s Storage) UpdateTask(request domain.Task) (domain.Task, error) {
 	const op = "storage.sqlite.task.update"
 
 	stmt, err := s.db.Prepare(`UPDATE tasks SET title = ?, status = ?, priority = ?, due_date = ?, modified_at = ? WHERE id = ?`)
@@ -96,7 +97,7 @@ func (s Storage) Update(task domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmt.Exec(task.Title, task.Status, task.Priority, task.DueDate, task.ModifiedAt, task.ID)
+	res, err := stmt.Exec(request.Title, request.Status, request.Priority, request.DueDate, time.Now(), request.ID)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -110,10 +111,10 @@ func (s Storage) Update(task domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, domain.ErrTaskNotFound)
 	}
 
-	return task, nil
+	return request, nil
 }
 
-func (s Storage) Delete(id int) error {
+func (s Storage) DeleteTask(id int) error {
 	const op = "storage.sqlite.task.delete"
 
 	stmt, err := s.db.Prepare(`DELETE FROM tasks WHERE id = ?`)
