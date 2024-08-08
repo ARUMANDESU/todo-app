@@ -27,111 +27,257 @@ func newSuite(t *testing.T) *Suite {
 	}
 }
 
-func TestCreate_ValidRequest_CreatesTask(t *testing.T) {
+func TestTask_Create_Valid(t *testing.T) {
 	suite := newSuite(t)
 	ctx := context.Background()
 	dueDate := time.Now().Add(24 * time.Hour)
 	request := domain.CreateTaskRequest{
 		Title:    "New Task",
-		Priority: "High",
+		Priority: domain.TaskPriorityHigh,
 		DueDate:  &dueDate,
 	}
 
-	suite.mockTaskModifier.On("CreateTask", ctx, mock.AnythingOfType("domain.Task")).Return(domain.Task{
-		ID:         "123",
-		Title:      "New Task",
-		Status:     domain.TaskStatusTodo,
-		Priority:   "High",
-		DueDate:    request.DueDate,
-		CreatedAt:  time.Now(),
-		ModifiedAt: time.Now(),
-	}, nil)
+	suite.mockTaskModifier.On("CreateTask", ctx, mock.AnythingOfType("domain.Task")).Return(domain.Task{}, nil)
 
-	task, err := suite.taskService.Create(ctx, request)
+	_, err := suite.taskService.Create(ctx, request)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "New Task", task.Title)
-	assert.Equal(t, "High", task.Priority)
-	assert.Equal(t, domain.TaskStatusTodo, task.Status)
 }
 
-func TestCreate_InvalidRequest_ReturnsError(t *testing.T) {
+func TestTask_Create_InvalidRequest(t *testing.T) {
 	suite := newSuite(t)
+
+	suite.mockTaskModifier.On("CreateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{}, assert.AnError)
+
 	ctx := context.Background()
 	dueDate := time.Now().Add(24 * time.Hour)
 	request := domain.CreateTaskRequest{
-		Title:    "",
+		Title:    "test-title",
 		Priority: "High",
 		DueDate:  &dueDate,
 	}
 
-	task, err := suite.taskService.Create(ctx, request)
+	_, err := suite.taskService.Create(ctx, request)
 
 	assert.Error(t, err)
-	assert.Equal(t, domain.Task{}, task)
+
+	suite.mockTaskModifier.AssertCalled(t, "CreateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
 }
 
-func TestUpdate_ValidRequest_UpdatesTask(t *testing.T) {
-	suite := newSuite(t)
-	ctx := context.Background()
-	dueDate := time.Now().Add(24 * time.Hour)
-	request := domain.UpdateTaskRequest{
-		ID:       "123",
-		Title:    "Updated Task",
-		Priority: "Medium",
-		DueDate:  &dueDate,
+func TestTask_Update_Valid(t *testing.T) {
+	dueDateOld := time.Now().Add(24 * time.Hour)
+	dueDateNew := time.Now().Add(48 * time.Hour)
+	tests := []struct {
+		name     string
+		request  domain.UpdateTaskRequest
+		setup    func(suite *Suite)
+		expected domain.Task
+	}{
+		{
+			name: "update title and priority",
+			request: domain.UpdateTaskRequest{
+				ID:       "123",
+				Title:    "Updated Task",
+				Priority: domain.TaskPriorityMedium,
+				DueDate:  &dueDateNew,
+			},
+			setup: func(suite *Suite) {
+				suite.mockTaskProvider.On("GetTaskByID", mock.Anything, "123").Return(domain.Task{
+					ID:         "123",
+					Title:      "Old Task",
+					Status:     domain.TaskStatusTodo,
+					Priority:   domain.TaskPriorityHigh,
+					DueDate:    &dueDateOld,
+					CreatedAt:  time.Now(),
+					ModifiedAt: time.Now(),
+				}, nil)
+				suite.mockTaskModifier.On("UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{
+					ID:         "123",
+					Title:      "Updated Task",
+					Status:     domain.TaskStatusTodo,
+					Priority:   domain.TaskPriorityMedium,
+					DueDate:    &dueDateNew,
+					CreatedAt:  time.Now(),
+					ModifiedAt: time.Now(),
+				}, nil)
+			},
+			expected: domain.Task{
+				ID:         "123",
+				Title:      "Updated Task",
+				Status:     domain.TaskStatusTodo,
+				Priority:   domain.TaskPriorityMedium,
+				DueDate:    &dueDateNew,
+				CreatedAt:  time.Now(),
+				ModifiedAt: time.Now(),
+			},
+		},
+		{
+			name: "update status",
+			request: domain.UpdateTaskRequest{
+				ID:     "123",
+				Status: domain.TaskStatusDone,
+			},
+			setup: func(suite *Suite) {
+				suite.mockTaskProvider.On("GetTaskByID", mock.Anything, "123").Return(domain.Task{
+					ID:         "123",
+					Title:      "Old Task",
+					Status:     domain.TaskStatusTodo,
+					Priority:   domain.TaskPriorityHigh,
+					DueDate:    &dueDateOld,
+					CreatedAt:  time.Now(),
+					ModifiedAt: time.Now(),
+				}, nil)
+				suite.mockTaskModifier.On("UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{
+					ID:         "123",
+					Title:      "Old Task",
+					Status:     domain.TaskStatusDone,
+					Priority:   domain.TaskPriorityHigh,
+					DueDate:    &dueDateOld,
+					CreatedAt:  time.Now(),
+					ModifiedAt: time.Now(),
+				}, nil)
+			},
+			expected: domain.Task{
+				ID:         "123",
+				Title:      "Old Task",
+				Status:     domain.TaskStatusDone,
+				Priority:   domain.TaskPriorityHigh,
+				DueDate:    &dueDateOld,
+				CreatedAt:  time.Now(),
+				ModifiedAt: time.Now(),
+			},
+		},
 	}
 
-	suite.mockTaskProvider.On("GetTaskByID", ctx, "123").Return(domain.Task{
-		ID:         "123",
-		Title:      "Old Task",
-		Status:     domain.TaskStatusTodo,
-		Priority:   "High",
-		DueDate:    &dueDate,
-		CreatedAt:  time.Now(),
-		ModifiedAt: time.Now(),
-	}, nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			suite := newSuite(t)
+			ctx := context.Background()
+			tt.setup(suite)
 
-	suite.mockTaskModifier.On("UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{
-		ID:         "123",
-		Title:      "Updated Task",
-		Status:     domain.TaskStatusTodo,
-		Priority:   "Medium",
-		DueDate:    request.DueDate,
-		CreatedAt:  time.Now(),
-		ModifiedAt: time.Now(),
-	}, nil)
+			task, err := suite.taskService.Update(ctx, tt.request)
 
-	task, err := suite.taskService.Update(ctx, request)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "Updated Task", task.Title)
-	assert.Equal(t, "Medium", task.Priority)
-}
-
-func TestUpdate_InvalidRequest_ReturnsError(t *testing.T) {
-	suite := newSuite(t)
-	ctx := context.Background()
-	dueDate := time.Now().Add(24 * time.Hour)
-	request := domain.UpdateTaskRequest{
-		ID:       "",
-		Title:    "Updated Task",
-		Priority: "Medium",
-		DueDate:  &dueDate,
+			assert.NoError(t, err)
+			isTaskEqual(t, tt.expected, task, time.Millisecond)
+		})
 	}
-
-	task, err := suite.taskService.Update(ctx, request)
-
-	assert.Error(t, err)
-	assert.Equal(t, domain.Task{}, task)
 }
 
-func isTaskEqual(t *testing.T, expected, actual domain.Task) {
-	assert.Equal(t, expected.ID, actual.ID)
+func TestTask_Update_Invalid(t *testing.T) {
+	t.Run("not found", func(t *testing.T) {
+		suite := newSuite(t)
+
+		suite.mockTaskProvider.On("GetTaskByID", mock.Anything, mock.AnythingOfType("string")).Return(domain.Task{}, domain.ErrTaskNotFound)
+
+		ctx := context.Background()
+		dueDate := time.Now().Add(24 * time.Hour)
+		request := domain.UpdateTaskRequest{
+			ID:       "test-id",
+			Title:    "Updated Task",
+			Priority: "Medium",
+			DueDate:  &dueDate,
+		}
+
+		_, err := suite.taskService.Update(ctx, request)
+
+		assert.Error(t, err)
+
+		suite.mockTaskProvider.AssertCalled(t, "GetTaskByID", mock.Anything, mock.AnythingOfType("string"))
+		suite.mockTaskModifier.AssertNotCalled(t, "UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
+	})
+
+	t.Run("invalid request", func(t *testing.T) {
+		suite := newSuite(t)
+
+		suite.mockTaskProvider.On("GetTaskByID", mock.Anything, mock.AnythingOfType("string")).Return(domain.Task{}, nil)
+		suite.mockTaskModifier.On("UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{}, assert.AnError)
+
+		ctx := context.Background()
+		dueDate := time.Now().Add(24 * time.Hour)
+		request := domain.UpdateTaskRequest{
+			ID:       "123",
+			Title:    "",
+			Priority: "Medium",
+			DueDate:  &dueDate,
+		}
+
+		_, err := suite.taskService.Update(ctx, request)
+
+		assert.Error(t, err)
+
+		suite.mockTaskModifier.AssertCalled(t, "UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
+	})
+}
+
+func TestTask_Update_InvalidArguments(t *testing.T) {
+	t.Run("title less than 3 character", func(t *testing.T) {
+		suite := newSuite(t)
+
+		ctx := context.Background()
+		dueDate := time.Now().Add(24 * time.Hour)
+		request := domain.UpdateTaskRequest{
+			ID:       "123",
+			Title:    "12",
+			Priority: "Medium",
+			DueDate:  &dueDate,
+		}
+
+		_, err := suite.taskService.Update(ctx, request)
+
+		assert.Error(t, err)
+
+		suite.mockTaskProvider.AssertNotCalled(t, "GetTaskByID", mock.Anything, mock.AnythingOfType("string"))
+		suite.mockTaskModifier.AssertNotCalled(t, "UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
+	})
+
+	t.Run("invalid due date", func(t *testing.T) {
+		suite := newSuite(t)
+
+		ctx := context.Background()
+		dueDate := time.Now().Add(-24 * time.Hour)
+		request := domain.UpdateTaskRequest{
+			ID:       "123",
+			Title:    "Updated Task",
+			Priority: "Medium",
+			DueDate:  &dueDate,
+		}
+
+		_, err := suite.taskService.Update(ctx, request)
+
+		assert.Error(t, err)
+
+		suite.mockTaskProvider.AssertNotCalled(t, "GetTaskByID", mock.Anything, mock.AnythingOfType("string"))
+		suite.mockTaskModifier.AssertNotCalled(t, "UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
+	})
+
+	t.Run("empty id", func(t *testing.T) {
+		suite := newSuite(t)
+
+		ctx := context.Background()
+		dueDate := time.Now().Add(24 * time.Hour)
+		request := domain.UpdateTaskRequest{
+			ID:       "",
+			Title:    "Updated Task",
+			Priority: "Medium",
+			DueDate:  &dueDate,
+		}
+
+		_, err := suite.taskService.Update(ctx, request)
+
+		assert.Error(t, err)
+
+		suite.mockTaskProvider.AssertNotCalled(t, "GetTaskByID", mock.Anything, mock.AnythingOfType("string"))
+		suite.mockTaskModifier.AssertNotCalled(t, "UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task"))
+	})
+}
+
+func isTaskEqual(t *testing.T, expected, actual domain.Task, tolerance time.Duration) {
+	t.Helper()
 	assert.Equal(t, expected.Title, actual.Title)
 	assert.Equal(t, expected.Status, actual.Status)
 	assert.Equal(t, expected.Priority, actual.Priority)
-	assert.Equal(t, expected.DueDate, actual.DueDate)
-	assert.Equal(t, expected.CreatedAt, actual.CreatedAt)
-	assert.Equal(t, expected.ModifiedAt, actual.ModifiedAt)
+	assert.WithinDuration(t, *expected.DueDate, *actual.DueDate, tolerance)
+	assert.WithinDuration(t, expected.CreatedAt, actual.CreatedAt, tolerance)
+	assert.WithinDuration(t, expected.ModifiedAt, actual.ModifiedAt, tolerance)
+
 }

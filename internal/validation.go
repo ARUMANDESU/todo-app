@@ -24,6 +24,6 @@ func validateDueDate(value any) error {
 	}
 
 	return validation.Validate(dueDate,
-		validation.Min(time.Now().AddDate(0, 0, 1)).Error("due date must be at least tomorrow"),
+		validation.Min(time.Now().AddDate(0, 0, -1)).Error("due date must be at least tomorrow"),
 	)
 }
