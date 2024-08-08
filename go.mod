@@ -6,8 +6,8 @@ toolchain go1.22.4
 
 require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
-	github.com/google/uuid v1.3.0
-	github.com/joho/godotenv v1.5.1
+	github.com/golang-migrate/migrate v3.5.4+incompatible
+	github.com/google/uuid v1.4.0
 	github.com/labstack/gommon v0.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/stretchr/testify v1.8.4

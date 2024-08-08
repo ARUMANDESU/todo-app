@@ -6,8 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ARUMANDESU/todo-app/internal/domain"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -16,17 +21,49 @@ type Storage struct {
 }
 
 func NewStorage() *Storage {
-	dbPath := os.Getenv("SQLITE_DB_PATH")
-	if dbPath == "" {
-		dbPath = "./db/sqlite/tasks.db" // default path
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	// Construct the path to the SQLite database file
+	dbPath := filepath.Join(dir, "assets", "db", "tasks.db")
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil
 	}
+
 	return &Storage{db: db}
 }
 
+func RunMigrations(db *sql.DB) error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("could not get working directory: %w", err)
+	}
+
+	migrationsPath := filepath.Join(dir, "migrations")
+
+	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
+	if err != nil {
+		return fmt.Errorf("could not create migration driver: %w", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://"+migrationsPath,
+		"sqlite3",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("could not create migrate instance: %w", err)
+	}
+
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("could not apply migrations: %w", err)
+	}
+
+	return nil
+}
 func (s Storage) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
 	const op = "storage.sqlite.task.get_all"
 

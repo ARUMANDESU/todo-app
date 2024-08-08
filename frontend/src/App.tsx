@@ -37,7 +37,7 @@ function App() {
         })()
     }, [])
     return (
-        <div id="App" className="h-screen">
+        <div className="min-h-screen h-full">
             <div className="grid grid-cols-[1fr_300px] gap-8 p-8">
                 <div>
                     <div className="flex items-center justify-between mb-4">
