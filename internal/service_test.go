@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"github.com/ARUMANDESU/todo-app/internal/domain"
 	"github.com/ARUMANDESU/todo-app/internal/mocks"
 	"github.com/stretchr/testify/assert"
@@ -26,50 +27,103 @@ func newSuite(t *testing.T) *Suite {
 	}
 }
 
-func TestTask_Create(t *testing.T) {
+func TestCreate_ValidRequest_CreatesTask(t *testing.T) {
+	suite := newSuite(t)
+	ctx := context.Background()
+	dueDate := time.Now().Add(24 * time.Hour)
+	request := domain.CreateTaskRequest{
+		Title:    "New Task",
+		Priority: "High",
+		DueDate:  &dueDate,
+	}
 
-	t.Run("success", func(t *testing.T) {
-		suite := newSuite(t)
-		defer suite.mockTaskModifier.AssertExpectations(t)
+	suite.mockTaskModifier.On("CreateTask", ctx, mock.AnythingOfType("domain.Task")).Return(domain.Task{
+		ID:         "123",
+		Title:      "New Task",
+		Status:     domain.TaskStatusTodo,
+		Priority:   "High",
+		DueDate:    request.DueDate,
+		CreatedAt:  time.Now(),
+		ModifiedAt: time.Now(),
+	}, nil)
 
-		suite.mockTaskModifier.On("CreateTask", mock.Anything).Return(domain.Task{}, nil)
+	task, err := suite.taskService.Create(ctx, request)
 
-		_, err := suite.taskService.Create(domain.CreateTaskRequest{
-			Title:    "test",
-			Status:   domain.TaskStatusTodo,
-			Priority: domain.TaskPriorityLow,
-			DueDate:  time.Now().AddDate(0, 0, 1),
-		})
-
-		assert.NoError(t, err)
-	})
+	assert.NoError(t, err)
+	assert.Equal(t, "New Task", task.Title)
+	assert.Equal(t, "High", task.Priority)
+	assert.Equal(t, domain.TaskStatusTodo, task.Status)
 }
 
-func TestTask_Create_FailPath(t *testing.T) {
-	t.Run("fail validation", func(t *testing.T) {
-		suite := newSuite(t)
-		defer suite.mockTaskModifier.AssertExpectations(t)
+func TestCreate_InvalidRequest_ReturnsError(t *testing.T) {
+	suite := newSuite(t)
+	ctx := context.Background()
+	dueDate := time.Now().Add(24 * time.Hour)
+	request := domain.CreateTaskRequest{
+		Title:    "",
+		Priority: "High",
+		DueDate:  &dueDate,
+	}
 
-		_, err := suite.taskService.Create(domain.CreateTaskRequest{})
+	task, err := suite.taskService.Create(ctx, request)
 
-		assert.Error(t, err)
-	})
+	assert.Error(t, err)
+	assert.Equal(t, domain.Task{}, task)
+}
 
-	t.Run("fail create task", func(t *testing.T) {
-		suite := newSuite(t)
-		defer suite.mockTaskModifier.AssertExpectations(t)
+func TestUpdate_ValidRequest_UpdatesTask(t *testing.T) {
+	suite := newSuite(t)
+	ctx := context.Background()
+	dueDate := time.Now().Add(24 * time.Hour)
+	request := domain.UpdateTaskRequest{
+		ID:       "123",
+		Title:    "Updated Task",
+		Priority: "Medium",
+		DueDate:  &dueDate,
+	}
 
-		suite.mockTaskModifier.On("CreateTask", mock.Anything).Return(domain.Task{}, domain.ErrInternal)
+	suite.mockTaskProvider.On("GetTaskByID", ctx, "123").Return(domain.Task{
+		ID:         "123",
+		Title:      "Old Task",
+		Status:     domain.TaskStatusTodo,
+		Priority:   "High",
+		DueDate:    &dueDate,
+		CreatedAt:  time.Now(),
+		ModifiedAt: time.Now(),
+	}, nil)
 
-		_, err := suite.taskService.Create(domain.CreateTaskRequest{
-			Title:    "test",
-			Status:   domain.TaskStatusTodo,
-			Priority: domain.TaskPriorityLow,
-			DueDate:  time.Now().AddDate(0, 0, 1),
-		})
+	suite.mockTaskModifier.On("UpdateTask", mock.Anything, mock.AnythingOfType("domain.Task")).Return(domain.Task{
+		ID:         "123",
+		Title:      "Updated Task",
+		Status:     domain.TaskStatusTodo,
+		Priority:   "Medium",
+		DueDate:    request.DueDate,
+		CreatedAt:  time.Now(),
+		ModifiedAt: time.Now(),
+	}, nil)
 
-		assert.Error(t, err)
-	})
+	task, err := suite.taskService.Update(ctx, request)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Updated Task", task.Title)
+	assert.Equal(t, "Medium", task.Priority)
+}
+
+func TestUpdate_InvalidRequest_ReturnsError(t *testing.T) {
+	suite := newSuite(t)
+	ctx := context.Background()
+	dueDate := time.Now().Add(24 * time.Hour)
+	request := domain.UpdateTaskRequest{
+		ID:       "",
+		Title:    "Updated Task",
+		Priority: "Medium",
+		DueDate:  &dueDate,
+	}
+
+	task, err := suite.taskService.Update(ctx, request)
+
+	assert.Error(t, err)
+	assert.Equal(t, domain.Task{}, task)
 }
 
 func isTaskEqual(t *testing.T, expected, actual domain.Task) {

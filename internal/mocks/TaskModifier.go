@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	domain "github.com/ARUMANDESU/todo-app/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -13,9 +15,9 @@ type TaskModifier struct {
 	mock.Mock
 }
 
-// CreateTask provides a mock function with given fields: task
-func (_m *TaskModifier) CreateTask(task domain.Task) (domain.Task, error) {
-	ret := _m.Called(task)
+// CreateTask provides a mock function with given fields: ctx, task
+func (_m *TaskModifier) CreateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
+	ret := _m.Called(ctx, task)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateTask")
@@ -23,17 +25,17 @@ func (_m *TaskModifier) CreateTask(task domain.Task) (domain.Task, error) {
 
 	var r0 domain.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Task) (domain.Task, error)); ok {
-		return rf(task)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Task) (domain.Task, error)); ok {
+		return rf(ctx, task)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Task) domain.Task); ok {
-		r0 = rf(task)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Task) domain.Task); ok {
+		r0 = rf(ctx, task)
 	} else {
 		r0 = ret.Get(0).(domain.Task)
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Task) error); ok {
-		r1 = rf(task)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Task) error); ok {
+		r1 = rf(ctx, task)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -41,17 +43,17 @@ func (_m *TaskModifier) CreateTask(task domain.Task) (domain.Task, error) {
 	return r0, r1
 }
 
-// DeleteTask provides a mock function with given fields: id
-func (_m *TaskModifier) DeleteTask(id string) error {
-	ret := _m.Called(id)
+// DeleteTask provides a mock function with given fields: ctx, id
+func (_m *TaskModifier) DeleteTask(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteTask")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -59,9 +61,9 @@ func (_m *TaskModifier) DeleteTask(id string) error {
 	return r0
 }
 
-// UpdateTask provides a mock function with given fields: task
-func (_m *TaskModifier) UpdateTask(task domain.Task) (domain.Task, error) {
-	ret := _m.Called(task)
+// UpdateTask provides a mock function with given fields: ctx, task
+func (_m *TaskModifier) UpdateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
+	ret := _m.Called(ctx, task)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateTask")
@@ -69,17 +71,17 @@ func (_m *TaskModifier) UpdateTask(task domain.Task) (domain.Task, error) {
 
 	var r0 domain.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func(domain.Task) (domain.Task, error)); ok {
-		return rf(task)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Task) (domain.Task, error)); ok {
+		return rf(ctx, task)
 	}
-	if rf, ok := ret.Get(0).(func(domain.Task) domain.Task); ok {
-		r0 = rf(task)
+	if rf, ok := ret.Get(0).(func(context.Context, domain.Task) domain.Task); ok {
+		r0 = rf(ctx, task)
 	} else {
 		r0 = ret.Get(0).(domain.Task)
 	}
 
-	if rf, ok := ret.Get(1).(func(domain.Task) error); ok {
-		r1 = rf(task)
+	if rf, ok := ret.Get(1).(func(context.Context, domain.Task) error); ok {
+		r1 = rf(ctx, task)
 	} else {
 		r1 = ret.Error(1)
 	}

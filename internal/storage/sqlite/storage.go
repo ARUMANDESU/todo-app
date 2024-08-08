@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ func NewStorage() *Storage {
 	return &Storage{db: db}
 }
 
-func (s Storage) GetAllTasks() ([]domain.Task, error) {
+func (s Storage) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
 	const op = "storage.sqlite.task.get_all"
 
 	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at FROM tasks`)
@@ -34,7 +35,7 @@ func (s Storage) GetAllTasks() ([]domain.Task, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	rows, err := stmt.Query()
+	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -53,7 +54,7 @@ func (s Storage) GetAllTasks() ([]domain.Task, error) {
 	return tasks, nil
 }
 
-func (s Storage) GetTaskByID(id int) (domain.Task, error) {
+func (s Storage) GetTaskByID(ctx context.Context, id string) (domain.Task, error) {
 	const op = "storage.sqlite.task.get_by_id"
 
 	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at  FROM tasks WHERE id = ?`)
@@ -62,7 +63,7 @@ func (s Storage) GetTaskByID(id int) (domain.Task, error) {
 	}
 
 	var task domain.Task
-	err = stmt.QueryRow(id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.DueDate, &task.CreatedAt, &task.ModifiedAt)
+	err = stmt.QueryRowContext(ctx, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.DueDate, &task.CreatedAt, &task.ModifiedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Task{}, fmt.Errorf("%s: %w", op, domain.ErrTaskNotFound)
@@ -73,7 +74,7 @@ func (s Storage) GetTaskByID(id int) (domain.Task, error) {
 	return task, nil
 }
 
-func (s Storage) CreateTask(request domain.Task) (domain.Task, error) {
+func (s Storage) CreateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
 	const op = "storage.sqlite.task.create"
 
 	stmt, err := s.db.Prepare(`INSERT INTO tasks(id, title, status, priority, due_date, created_at, modified_at) VALUES(?, ?, ?, ?, ?, ?, ?)`)
@@ -81,15 +82,15 @@ func (s Storage) CreateTask(request domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = stmt.Exec(request.ID, request.Title, request.Status, request.Priority, request.DueDate, request.CreatedAt, request.ModifiedAt)
+	_, err = stmt.ExecContext(ctx, task.ID, task.Title, task.Status, task.Priority, task.DueDate, task.CreatedAt, task.ModifiedAt)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return request, nil
+	return task, nil
 }
 
-func (s Storage) UpdateTask(request domain.Task) (domain.Task, error) {
+func (s Storage) UpdateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
 	const op = "storage.sqlite.task.update"
 
 	stmt, err := s.db.Prepare(`UPDATE tasks SET title = ?, status = ?, priority = ?, due_date = ?, modified_at = ? WHERE id = ?`)
@@ -97,7 +98,7 @@ func (s Storage) UpdateTask(request domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmt.Exec(request.Title, request.Status, request.Priority, request.DueDate, time.Now(), request.ID)
+	res, err := stmt.ExecContext(ctx, task.Title, task.Status, task.Priority, task.DueDate, time.Now(), task.ID)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -111,10 +112,10 @@ func (s Storage) UpdateTask(request domain.Task) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, domain.ErrTaskNotFound)
 	}
 
-	return request, nil
+	return task, nil
 }
 
-func (s Storage) DeleteTask(id string) error {
+func (s Storage) DeleteTask(ctx context.Context, id string) error {
 	const op = "storage.sqlite.task.delete"
 
 	stmt, err := s.db.Prepare(`DELETE FROM tasks WHERE id = ?`)
@@ -122,7 +123,7 @@ func (s Storage) DeleteTask(id string) error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmt.Exec(id)
+	res, err := stmt.ExecContext(ctx, id)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/ARUMANDESU/todo-app/internal/domain"
 	"github.com/ARUMANDESU/todo-app/internal/storage/sqlite"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"log"
 )
 
 // App struct
@@ -16,11 +17,11 @@ type App struct {
 }
 
 type TaskService interface {
-	GetAll() ([]domain.Task, error)
-	GetByID(id int) (domain.Task, error)
-	Create(request domain.CreateTaskRequest) (domain.Task, error)
-	Update(request domain.UpdateTaskRequest) (domain.Task, error)
-	Delete(id string) error
+	GetAll(ctx context.Context) ([]domain.Task, error)
+	GetByID(ctx context.Context, id string) (domain.Task, error)
+	Create(ctx context.Context, request domain.CreateTaskRequest) (domain.Task, error)
+	Update(ctx context.Context, request domain.UpdateTaskRequest) (domain.Task, error)
+	Delete(ctx context.Context, id string) error
 }
 
 // NewApp creates a new App application struct
@@ -43,19 +44,20 @@ func (a *App) Greet(name string) string {
 }
 
 func (a *App) GetAllTasks() ([]domain.Task, error) {
-	return a.taskService.GetAll()
+	return a.taskService.GetAll(a.ctx)
 }
 
-func (a *App) GetTaskByID(id int) (domain.Task, error) {
-	return a.taskService.GetByID(id)
+func (a *App) GetTaskByID(id string) (domain.Task, error) {
+	return a.taskService.GetByID(a.ctx, id)
 }
 
 func (a *App) CreateTask(request domain.CreateTaskRequest) (domain.Task, error) {
-	return a.taskService.Create(request)
+	log.Println("CreateTask", request.DueDate)
+	return a.taskService.Create(a.ctx, request)
 }
 
 func (a *App) UpdateTask(request domain.UpdateTaskRequest) (domain.Task, error) {
-	return a.taskService.Update(request)
+	return a.taskService.Update(a.ctx, request)
 }
 
 func (a *App) DeleteTask(id string) error {
@@ -63,7 +65,7 @@ func (a *App) DeleteTask(id string) error {
 		return nil
 	}
 
-	return a.taskService.Delete(id)
+	return a.taskService.Delete(a.ctx, id)
 }
 
 func (a *App) confirmDeleteTask() bool {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {domain} from "../../wailsjs/go/models";
 import {CreateTask} from "../../wailsjs/go/main/App";
 import {Label} from "@/components/ui/label";
@@ -12,10 +12,8 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
-import {Calendar} from "@/components/ui/calendar";
-import {CalendarDaysIcon, Flag} from "lucide-react";
+import {Flag} from "lucide-react";
 import {toast} from "sonner";
 
 export type TaskInputProps = {
@@ -24,7 +22,6 @@ export type TaskInputProps = {
 
 function TaskInput({onTaskCreate}: TaskInputProps) {
     const [dueDate, setDueDate] = useState<string>()
-    const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date())
 
     const handleSubmit = async (e: any) => {
         e.preventDefault()
@@ -36,20 +33,15 @@ function TaskInput({onTaskCreate}: TaskInputProps) {
         }
 
         const dueDateString = formData.get("dueDate") as string
-        const dueDate = new Date(dueDateString).toISOString()
 
         const newTask = await CreateTask(domain.CreateTaskRequest.createFrom({
             title: formData.get("title") as string,
             priority: formData.get("priority") as domain.TaskPriority,
-            dueDate: dueDate
+            due_date: dueDateString ? new Date(dueDateString).toISOString() : null
         }))
         onTaskCreate(newTask)
         e.target.reset()
     }
-
-    useEffect(() => {
-        setDueDate(calendarDate?.toISOString())
-    }, [calendarDate]);
 
     return (
         <>
@@ -96,23 +88,8 @@ function TaskInput({onTaskCreate}: TaskInputProps) {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="space-y-2 mt-6">
-                        <Input id="dueDate" name="dueDate" type="date" value={dueDate} className="hidden"/>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" size="icon">
-                                    <CalendarDaysIcon/>
-                                    <span className="sr-only">Due Date</span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="single"
-                                    selected={calendarDate}
-                                    onSelect={setCalendarDate}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                    <div className="space-y-2 mt-8">
+                        <Input id="dueDate" name="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}/>
                     </div>
                 </div>
 

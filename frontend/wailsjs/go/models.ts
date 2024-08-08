@@ -1,14 +1,14 @@
 export namespace domain {
 	
+	export enum TaskStatus {
+	    TODO = "todo",
+	    DONE = "done",
+	}
 	export enum TaskPriority {
 	    NONE = "",
 	    LOW = "low",
 	    MEDIUM = "medium",
 	    HIGH = "high",
-	}
-	export enum TaskStatus {
-	    TODO = "todo",
-	    DONE = "done",
 	}
 	export class CreateTaskRequest {
 	    title: string;
@@ -91,7 +91,7 @@ export namespace domain {
 		}
 	}
 	export class UpdateTaskRequest {
-	    id: number;
+	    id: string;
 	    title: string;
 	    status: TaskStatus;
 	    priority: TaskPriority;

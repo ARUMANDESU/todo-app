@@ -8,7 +8,7 @@ export function DeleteTask(arg1:string):Promise<void>;
 
 export function GetAllTasks():Promise<Array<domain.Task>>;
 
-export function GetTaskByID(arg1:number):Promise<domain.Task>;
+export function GetTaskByID(arg1:string):Promise<domain.Task>;
 
 export function Greet(arg1:string):Promise<string>;
 

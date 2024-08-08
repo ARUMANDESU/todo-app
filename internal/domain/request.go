@@ -9,7 +9,7 @@ type CreateTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
-	ID       int          `json:"id"`
+	ID       string       `json:"id"`
 	Title    string       `json:"title"`
 	Status   TaskStatus   `json:"status"`
 	Priority TaskPriority `json:"priority"`

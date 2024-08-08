@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	domain "github.com/ARUMANDESU/todo-app/internal/domain"
 
 	mock "github.com/stretchr/testify/mock"
@@ -13,9 +15,9 @@ type TaskProvider struct {
 	mock.Mock
 }
 
-// GetAllTasks provides a mock function with given fields:
-func (_m *TaskProvider) GetAllTasks() ([]domain.Task, error) {
-	ret := _m.Called()
+// GetAllTasks provides a mock function with given fields: ctx
+func (_m *TaskProvider) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
+	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllTasks")
@@ -23,19 +25,19 @@ func (_m *TaskProvider) GetAllTasks() ([]domain.Task, error) {
 
 	var r0 []domain.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]domain.Task, error)); ok {
-		return rf()
+	if rf, ok := ret.Get(0).(func(context.Context) ([]domain.Task, error)); ok {
+		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func() []domain.Task); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) []domain.Task); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]domain.Task)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -43,9 +45,9 @@ func (_m *TaskProvider) GetAllTasks() ([]domain.Task, error) {
 	return r0, r1
 }
 
-// GetTaskByID provides a mock function with given fields: id
-func (_m *TaskProvider) GetTaskByID(id int) (domain.Task, error) {
-	ret := _m.Called(id)
+// GetTaskByID provides a mock function with given fields: ctx, id
+func (_m *TaskProvider) GetTaskByID(ctx context.Context, id string) (domain.Task, error) {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetTaskByID")
@@ -53,17 +55,17 @@ func (_m *TaskProvider) GetTaskByID(id int) (domain.Task, error) {
 
 	var r0 domain.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int) (domain.Task, error)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (domain.Task, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(int) domain.Task); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, string) domain.Task); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(domain.Task)
 	}
 
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}

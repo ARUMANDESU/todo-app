@@ -11,6 +11,7 @@ export type TaskItemProps = {
     task: domain.Task;
     onClick: (task: domain.Task) => void;
     onUpdate: (task: domain.Task) => void;
+    onDelete: (task: domain.Task) => void;
     isCurrent: boolean;
 }
 
@@ -21,7 +22,7 @@ const priorityColors: { [key: string]: string } = {
     normal: "text-blue-500"
 };
 
-function TaskItem({task, onClick, isCurrent, onUpdate}: TaskItemProps) {
+function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps) {
 
     const markTaskDone = (task: domain.Task) => {
         // TODO: change logic to update task status
@@ -32,6 +33,7 @@ function TaskItem({task, onClick, isCurrent, onUpdate}: TaskItemProps) {
     const deleteTask = (task: domain.Task) => {
         DeleteTask(task.id)
             .then(() => {
+                onDelete(task)
                 toast.success("Task deleted successfully")
             })
             .catch((err) => {

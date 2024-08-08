@@ -25,6 +25,10 @@ function App() {
         setTasks(tasks.map((t) => t.id === task.id ? task : t))
     }
 
+    const handleTaskDelete = (task: domain.Task) => {
+        setTasks(tasks.filter((t) => t.id !== task.id))
+    }
+
 
     useEffect(() => {
         (async () => {
@@ -57,6 +61,7 @@ function App() {
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
                                             onUpdate={handleTaskUpdate}
+                                            onDelete={handleTaskDelete}
                                         />
                                     ))}
                             </div>
@@ -73,6 +78,7 @@ function App() {
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
                                             onUpdate={handleTaskUpdate}
+                                            onDelete={handleTaskDelete}
                                         />
                                     ))}
                             </div>
