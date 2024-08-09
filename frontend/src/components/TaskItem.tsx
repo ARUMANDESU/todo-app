@@ -51,9 +51,12 @@ function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps)
 
     return (
         <>
-            <Card className={`cursor-pointer ${ isCurrent ? "bg-muted" : "hover:bg-muted"}`}>
+            <Card
+                className={`cursor-pointer ${ isCurrent ? "bg-muted" : "hover:bg-muted"}`}
+                onClick={() => onClick(task)}
+            >
                 <CardContent className="flex justify-between items-center p-3">
-                    <div className="flex justify-start w-full" onClick={() => onClick(task)}>
+                    <div className="flex justify-start w-full">
                         {task.status === TaskStatus.DONE ?
                             (<SquareX className="text-muted-foreground hover:bg-primary/20"
                                       onClick={() => markTaskDone(task)}/>) :

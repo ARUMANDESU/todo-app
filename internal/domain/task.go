@@ -23,7 +23,7 @@ const (
 )
 
 const (
-	TaskPriorityNone   TaskPriority = ""
+	TaskPriorityNone   TaskPriority = "none"
 	TaskPriorityLow    TaskPriority = "low"
 	TaskPriorityMedium TaskPriority = "medium"
 	TaskPriorityHigh   TaskPriority = "high"

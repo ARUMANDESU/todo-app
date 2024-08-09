@@ -1,7 +1,7 @@
 export namespace domain {
 	
 	export enum TaskPriority {
-	    NONE = "",
+	    NONE = "none",
 	    LOW = "low",
 	    MEDIUM = "medium",
 	    HIGH = "high",

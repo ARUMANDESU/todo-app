@@ -7,6 +7,7 @@ import TaskItem from "@/components/TaskItem";
 import {PriorityBadge} from "@/components/PriorityBadge";
 import {Button} from "@/components/ui/button";
 import {RefreshCwIcon} from "lucide-react";
+import TaskSidePanel from "@/components/TaskSidePanel";
 
 const priorityMap: { [key: string]: number } = {
     high: 3,
@@ -101,31 +102,7 @@ function App() {
                         </div>
                     </div>
                 </div>
-                <div>
-                    {currentTask ? (
-                        <Card className="sticky top-8">
-                            <CardHeader>
-                                <CardTitle>Current Task</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <div className="font-medium">{currentTask.title}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Priority:
-                                        <PriorityBadge priority={currentTask.priority}/>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">Due: {currentTask.due_date}</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <Card className="sticky top-8 text-center">
-                            <CardContent>
-                                <p className="text-muted-foreground">Select a task to view its details.</p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
+               <TaskSidePanel task={currentTask} onUpdate={handleTaskUpdate}/>
             </div>
         </div>
 
