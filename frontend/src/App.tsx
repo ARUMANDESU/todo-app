@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {domain} from "../wailsjs/go/models";
 import {GetAllTasks} from "../wailsjs/go/main/App";
 import TaskInput from "@/components/task-input";
@@ -7,6 +7,8 @@ import {Button} from "@/components/ui/button";
 import {RefreshCwIcon} from "lucide-react";
 import TaskSidePanel from "@/components/task-side-panel";
 import {ThemeToggle} from "@/components/theme-toggle";
+import {Input} from "@/components/ui/input";
+import {debounce} from "ts-debounce";
 
 const priorityMap: { [key: string]: number } = {
     high: 3,
@@ -18,6 +20,7 @@ const priorityMap: { [key: string]: number } = {
 function App() {
     const [tasks, setTasks] = useState<domain.Task[]>([])
     const [currentTask, setCurrentTask] = useState<domain.Task | null>(null)
+    const [searchTerm, setSearchTerm] = useState<string>("")
 
     const handleTaskClick = (task: domain.Task) => {
         setCurrentTask(task)
@@ -49,6 +52,30 @@ function App() {
         setTasks(tasks.filter((t) => t.id !== task.id))
     }
 
+    const debouncedSearch = useCallback(
+        debounce((term: string) => {
+            const regex = new RegExp(term, 'i');
+            const filteredTasks = tasks
+                .sort((a,b)=>a.title.length-b.title.length)
+                .filter((task) => regex.test(task.title));
+            if (filteredTasks.length > 0) {
+                setCurrentTask(filteredTasks[0]);
+            }
+        }, 500),
+        [tasks]
+    );
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+        debouncedSearch(e.target.value);
+    }
+
+    const isHighlighted = (task: domain.Task) => {
+        if (searchTerm === "") {
+            return false;
+        }
+        return new RegExp(searchTerm, 'i').test(task.title);
+    }
 
     useEffect(() => {
         fetchAllTasks()
@@ -61,7 +88,14 @@ function App() {
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-bold">Todo App</h1>
                         <div className="flex flex-row gap-2">
-                            <ThemeToggle />
+                            <Input
+                                type="search"
+                                placeholder="Search tasks..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="bg-card rounded-md px-4 py-2 text-sm"
+                            />
+                            <div><ThemeToggle /></div>
                             <Button
                                 variant="outline"
                                 onClick={fetchAllTasks}
@@ -85,6 +119,7 @@ function App() {
                                             task={task}
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
+                                            isHighlighted={isHighlighted(task)}
                                             onUpdate={handleTaskUpdate}
                                             onDelete={handleTaskDelete}
                                         />
@@ -102,6 +137,7 @@ function App() {
                                             task={task}
                                             onClick={handleTaskClick}
                                             isCurrent={task === currentTask}
+                                            isHighlighted={isHighlighted(task)}
                                             onUpdate={handleTaskUpdate}
                                             onDelete={handleTaskDelete}
                                         />

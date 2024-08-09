@@ -1,12 +1,12 @@
 import React from 'react';
 import {domain} from "../../wailsjs/go/models";
 import {Card, CardContent} from '@/components/ui/card';
-import {Square, SquareX, Trash} from "lucide-react";
+import {Trash} from "lucide-react";
 import {DeleteTask, UpdateTask} from "../../wailsjs/go/main/App";
 import {toast} from "sonner";
 import {PriorityBadge} from "@/components/priority-badge";
-import TaskStatus = domain.TaskStatus;
 import TaskStatusToggle from "@/components/task-status-toggle";
+import TaskStatus = domain.TaskStatus;
 
 export type TaskItemProps = {
     task: domain.Task;
@@ -14,6 +14,7 @@ export type TaskItemProps = {
     onUpdate: (task: domain.Task) => void;
     onDelete: (task: domain.Task) => void;
     isCurrent: boolean;
+    isHighlighted: boolean;
 }
 
 export const priorityColors: { [key: string]: string } = {
@@ -23,7 +24,7 @@ export const priorityColors: { [key: string]: string } = {
     none: "text-blue-500 hover:bg-blue-100 dark:text-blue-300 dark:hover:bg-blue-300/30",
 };
 
-function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps) {
+function TaskItem({task, onClick, isCurrent, onUpdate, onDelete, isHighlighted = false}: TaskItemProps) {
     const markTaskDone = () => {
         const request = domain.UpdateTaskRequest.createFrom(
             {
@@ -53,7 +54,7 @@ function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps)
     return (
         <>
             <Card
-                className={`cursor-pointer ${ isCurrent ? "bg-muted" : "hover:bg-muted"}`}
+                className={`cursor-pointer ${ isCurrent ? "bg-muted" : "hover:bg-muted"} ${isHighlighted ? "bg-yellow-100" : ""}`}
                 onClick={() => onClick(task)}
             >
                 <CardContent className="flex justify-between items-center p-3">

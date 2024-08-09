@@ -6,14 +6,13 @@ import {UpdateTask} from "../../wailsjs/go/main/App";
 import {toast} from "sonner";
 import {Input} from "@/components/ui/input";
 import PrioritySelect from "@/components/priority-select";
-import TaskPriority = domain.TaskPriority;
 import TaskStatusToggle from "@/components/task-status-toggle";
-import TaskStatus = domain.TaskStatus;
 import {Separator} from "@/components/ui/separator";
 import {Textarea} from "@/components/ui/textarea";
 import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
 import {XIcon} from "lucide-react";
+import TaskPriority = domain.TaskPriority;
+import TaskStatus = domain.TaskStatus;
 
 export type TaskSidePanelProps = {
     task: domain.Task | null;
@@ -158,7 +157,7 @@ function TaskSidePanel({task, onUpdate}: TaskSidePanelProps) {
 
     const addTag = async (tag: string) => {
         if (tags.includes(tag)) {
-            console.log("Tag already exists");
+            toast.warning("Tag already exists");
             return;
         }
         try {
@@ -198,6 +197,7 @@ function TaskSidePanel({task, onUpdate}: TaskSidePanelProps) {
         setTags(task.tags || []);
         setTitleError("")
         setDescriptionError("")
+        setTagInput("")
     }, [task]);
 
     return (
