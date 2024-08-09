@@ -1,13 +1,12 @@
 import {useEffect, useState} from 'react';
 import {domain} from "../wailsjs/go/models";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {GetAllTasks} from "../wailsjs/go/main/App";
-import TaskInput from "@/components/TaskInput";
-import TaskItem from "@/components/TaskItem";
-import {PriorityBadge} from "@/components/PriorityBadge";
+import TaskInput from "@/components/task-input";
+import TaskItem from "@/components/task-item";
 import {Button} from "@/components/ui/button";
 import {RefreshCwIcon} from "lucide-react";
-import TaskSidePanel from "@/components/TaskSidePanel";
+import TaskSidePanel from "@/components/task-side-panel";
+import {ThemeToggle} from "@/components/theme-toggle";
 
 const priorityMap: { [key: string]: number } = {
     high: 3,
@@ -58,10 +57,16 @@ function App() {
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-bold">Todo App</h1>
-                        <Button variant="outline" onClick={fetchAllTasks}>
-                            <RefreshCwIcon className="h-4 w-4 mr-2"/>
-                            Refresh
-                        </Button>
+                        <div className="flex flex-row gap-2">
+                            <ThemeToggle />
+                            <Button
+                                variant="outline"
+                                onClick={fetchAllTasks}
+                            >
+                                <RefreshCwIcon className="h-4 w-4 mr-2"/>
+                                <p>Refresh</p>
+                            </Button>
+                        </div>
                     </div>
                     <TaskInput onTaskCreate={(task) => setTasks([...tasks, task])}/>
                     <div className="grid gap-4">

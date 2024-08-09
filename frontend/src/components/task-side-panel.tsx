@@ -14,9 +14,8 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import TaskPriority = domain.TaskPriority;
-import Task = domain.Task;
 import {Flag} from "lucide-react";
+import TaskPriority = domain.TaskPriority;
 
 export type TaskSidePanelProps = {
     task: domain.Task | null;
@@ -165,19 +164,19 @@ function TaskSidePanel({task, onUpdate}: TaskSidePanelProps) {
                                             </SelectItem>
                                             <SelectItem value={TaskPriority.LOW}>
                                                 <div className="flex items-center">
-                                                    <Flag className="h-4 w-4 mr-2 text-green-500" />
+                                                    <Flag className="h-4 w-4 mr-2 text-green-500 dark:text-green-300" />
                                                     <span>Low</span>
                                                 </div>
                                             </SelectItem>
                                             <SelectItem value={TaskPriority.MEDIUM}>
                                                 <div className="flex items-center">
-                                                    <Flag className="h-4 w-4 mr-2 text-yellow-500" />
+                                                    <Flag className="h-4 w-4 mr-2 text-yellow-500 dark:text-yellow-300" />
                                                     <span>Medium</span>
                                                 </div>
                                             </SelectItem>
                                             <SelectItem value={TaskPriority.HIGH}>
                                                 <div className="flex items-center">
-                                                    <Flag className="h-4 w-4 mr-2 text-red-500" />
+                                                    <Flag className="h-4 w-4 mr-2 text-red-500 dark:text-red-300" />
                                                     <span>High</span>
                                                 </div>
                                             </SelectItem>
@@ -210,4 +209,4 @@ function TaskSidePanel({task, onUpdate}: TaskSidePanelProps) {
     );
 }
 
-export default TaskSidePanel;
+export default TaskSidePanel

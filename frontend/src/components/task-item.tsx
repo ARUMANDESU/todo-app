@@ -4,7 +4,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Square, SquareX, Trash} from "lucide-react";
 import {DeleteTask, UpdateTask} from "../../wailsjs/go/main/App";
 import {toast} from "sonner";
-import {PriorityBadge} from "@/components/PriorityBadge";
+import {PriorityBadge} from "@/components/priority-badge";
 import TaskStatus = domain.TaskStatus;
 
 export type TaskItemProps = {
@@ -16,10 +16,10 @@ export type TaskItemProps = {
 }
 
 const priorityColors: { [key: string]: string } = {
-    high: "text-red-500 hover:bg-red-100",
-    medium: "text-yellow-500 hover:bg-yellow-100",
-    low: "text-green-500 hover:bg-green-100",
-    normal: "text-blue-500 hover:bg-blue-100",
+    high: "text-red-500 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-300/30",
+    medium: "text-yellow-500 hover:bg-yellow-100 dark:text-yellow-300 dark:hover:bg-yellow-300/30",
+    low: "text-green-500 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-300/30",
+    none: "text-blue-500 hover:bg-blue-100 dark:text-blue-300 dark:hover:bg-blue-300/30",
 };
 
 function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps) {

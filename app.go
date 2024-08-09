@@ -7,7 +7,6 @@ import (
 	"github.com/ARUMANDESU/todo-app/internal/domain"
 	"github.com/ARUMANDESU/todo-app/internal/storage/sqlite"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"log"
 )
 
 // App struct
@@ -52,7 +51,6 @@ func (a *App) GetTaskByID(id string) (domain.Task, error) {
 }
 
 func (a *App) CreateTask(request domain.CreateTaskRequest) (domain.Task, error) {
-	log.Println("CreateTask", request.DueDate)
 	return a.taskService.Create(a.ctx, request)
 }
 
