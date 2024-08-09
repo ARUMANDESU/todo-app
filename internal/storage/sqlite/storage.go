@@ -51,6 +51,11 @@ func NewStorage() (*Storage, error) {
 		return nil, fmt.Errorf("open sqlite connection: %w", err)
 	}
 
+	// Set the busy timeout to 5 seconds
+	db.SetConnMaxLifetime(time.Minute * 5)
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+
 	return &Storage{db: db}, nil
 }
 

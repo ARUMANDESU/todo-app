@@ -28,6 +28,40 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- Screenshots -->
+## Screenshots
+<details>
+  <summary>Home Page</summary>
+
+  ![Home Page](/assets/home.png)
+</details>
+<details>
+  <summary>Add Todo Priority</summary>
+
+  ![Add Todo](/assets/priority.png)
+</details>
+<details>
+  <summary>Side Panel</summary>
+  
+  ![Side Panel](/assets/side-panel.png)
+</details>
+<details>
+  <summary>Description and Tags</summary>
+
+  ![Description and Tags](/assets/description-tags.png)
+</details>
+<details>
+  <summary>Themes</summary>
+
+  ![Themes](/assets/themes.gif)
+</details>
+<details>
+  <summary>Delete Todo</summary>
+
+  ![Delete Todo](/assets/delete-task.png)
+</details>
+
+
 ## Getting Started
 ### Prerequisites
 - Go version 1.22.2

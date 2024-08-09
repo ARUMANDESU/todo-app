@@ -1,14 +1,14 @@
 export namespace domain {
 	
-	export enum TaskStatus {
-	    TODO = "todo",
-	    DONE = "done",
-	}
 	export enum TaskPriority {
 	    NONE = "none",
 	    LOW = "low",
 	    MEDIUM = "medium",
 	    HIGH = "high",
+	}
+	export enum TaskStatus {
+	    TODO = "todo",
+	    DONE = "done",
 	}
 	export class CreateTaskRequest {
 	    title: string;
