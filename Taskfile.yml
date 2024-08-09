@@ -16,11 +16,11 @@ tasks:
   migrate:up:
     cmds:
       - echo "Migrating..."
-      - migrate -path ./db/sqlite/migrations -database sqlite3://db/sqlite/tasks.db up
+      - migrate -path ./migrations -database sqlite3://assets/db/tasks.db up
       - echo "Done!"
 
   migrate:down:
     cmds:
       - echo "Rolling back..."
-      - migrate -path ./db/sqlite/migrations -database sqlite3://db/sqlite/tasks.db down
+      - migrate -path ./migrations -database sqlite3://assets/db/tasks.db down
       - echo "Done!"

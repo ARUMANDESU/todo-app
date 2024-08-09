@@ -37,6 +37,9 @@ function App() {
 
     const handleTaskUpdate = (task: domain.Task) => {
         setTasks(tasks.map((t) => t.id === task.id ? task : t))
+        if (task.id === currentTask?.id) {
+            setCurrentTask(task)
+        }
     }
 
     const handleTaskDelete = (task: domain.Task) => {

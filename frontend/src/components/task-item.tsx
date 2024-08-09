@@ -6,6 +6,7 @@ import {DeleteTask, UpdateTask} from "../../wailsjs/go/main/App";
 import {toast} from "sonner";
 import {PriorityBadge} from "@/components/priority-badge";
 import TaskStatus = domain.TaskStatus;
+import TaskStatusToggle from "@/components/task-status-toggle";
 
 export type TaskItemProps = {
     task: domain.Task;
@@ -15,7 +16,7 @@ export type TaskItemProps = {
     isCurrent: boolean;
 }
 
-const priorityColors: { [key: string]: string } = {
+export const priorityColors: { [key: string]: string } = {
     high: "text-red-500 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-300/30",
     medium: "text-yellow-500 hover:bg-yellow-100 dark:text-yellow-300 dark:hover:bg-yellow-300/30",
     low: "text-green-500 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-300/30",
@@ -23,7 +24,7 @@ const priorityColors: { [key: string]: string } = {
 };
 
 function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps) {
-    const markTaskDone = (task: domain.Task) => {
+    const markTaskDone = () => {
         const request = domain.UpdateTaskRequest.createFrom(
             {
                 id: task.id,
@@ -57,11 +58,7 @@ function TaskItem({task, onClick, isCurrent, onUpdate, onDelete}: TaskItemProps)
             >
                 <CardContent className="flex justify-between items-center p-3">
                     <div className="flex justify-start w-full">
-                        {task.status === TaskStatus.DONE ?
-                            (<SquareX className="text-muted-foreground hover:bg-primary/20"
-                                      onClick={() => markTaskDone(task)}/>) :
-                            (<Square className={priorityColors[task.priority]} onClick={() => markTaskDone(task)}/>)
-                        }
+                        <TaskStatusToggle task={task} onClick={markTaskDone}/>
                         <div className={`font-medium px-2.5 ${task.status  === TaskStatus.DONE && " line-through "}`}>{task.title}</div>
                         <span className="ml-2 ">
                             <PriorityBadge priority={task.priority}/>

@@ -99,6 +99,8 @@ func (t Task) Update(ctx context.Context, request domain.UpdateTaskRequest) (dom
 		validation.Field(&request.ID, validation.Required),
 		validation.Field(&request.Title, validation.By(validateTitle)),
 		validation.Field(&request.DueDate, validation.By(validateDueDate)),
+		validation.Field(&request.Description, validation.By(validateDescription)),
+		validation.Field(&request.Tags, validation.By(validateTags)),
 	)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%w: %w", domain.ErrInvalidArguments, err)
@@ -120,6 +122,12 @@ func (t Task) Update(ctx context.Context, request domain.UpdateTaskRequest) (dom
 	}
 	if request.DueDate != nil {
 		task.DueDate = request.DueDate
+	}
+	if request.Description != nil {
+		task.Description = *request.Description
+	}
+	if request.Tags != nil {
+		task.Tags = request.Tags
 	}
 
 	task.ModifiedAt = time.Now()

@@ -5,13 +5,15 @@ import (
 )
 
 type Task struct {
-	ID         string       `json:"id"`
-	Title      string       `json:"title"`
-	Status     TaskStatus   `json:"status"`
-	Priority   TaskPriority `json:"priority"`
-	DueDate    *time.Time   `json:"due_date,omitempty"`
-	CreatedAt  time.Time    `json:"created_at"`
-	ModifiedAt time.Time    `json:"modified_at"`
+	ID          string       `json:"id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	Tags        []string     `json:"tags"`
+	Status      TaskStatus   `json:"status"`
+	Priority    TaskPriority `json:"priority"`
+	DueDate     *time.Time   `json:"due_date,omitempty"`
+	CreatedAt   time.Time    `json:"created_at"`
+	ModifiedAt  time.Time    `json:"modified_at"`
 }
 
 type TaskStatus string
