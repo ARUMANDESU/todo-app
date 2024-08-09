@@ -1,3 +1,0 @@
-
-ALTER TABLE tasks ADD COLUMN description TEXT DEFAULT '';
-ALTER TABLE tasks ADD COLUMN tags TEXT[];

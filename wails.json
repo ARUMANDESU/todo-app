@@ -9,10 +9,5 @@
   "author": {
     "name": "ARUMANDESU",
     "email": "zh.arumandes@gmail.com"
-  },
-  "build": {
-    "assets": [
-      "assets/db/tasks.db"
-    ]
   }
 }

@@ -25,7 +25,10 @@ type TaskService interface {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	sqliteDB := sqlite.NewStorage()
+	sqliteDB, err := sqlite.NewStorage()
+	if err != nil {
+		panic(err)
+	}
 	taskService := internal.NewTask(sqliteDB, sqliteDB)
 
 	return &App{taskService: taskService}

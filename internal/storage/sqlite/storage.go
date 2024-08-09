@@ -3,71 +3,105 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"github.com/ARUMANDESU/todo-app/internal/domain"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/source/file"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"log"
+	_ "modernc.org/sqlite"
 	"os"
 	"path/filepath"
 	"time"
 )
 
+//go:embed migrations
+var migrationsFs embed.FS
+
 type Storage struct {
 	db *sql.DB
 }
 
-func NewStorage() *Storage {
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
+func getDataSource() string {
+	cacheDir, _ := os.UserCacheDir()
+	dataDir := filepath.Join(cacheDir, "todo-app")
+	os.MkdirAll(dataDir, os.FileMode(0755))
+
+	// if file is not found, it will be created automatically
+	if _, err := os.Stat(filepath.Join(dataDir, "tasks.db")); os.IsNotExist(err) {
+		file, err := os.Create(filepath.Join(dataDir, "tasks.db"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		file.Close()
 	}
 
-	// Construct the path to the SQLite database file
-	dbPath := filepath.Join(dir, "assets", "db", "tasks.db")
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil
-	}
-
-	return &Storage{db: db}
+	return filepath.Join(dataDir, "tasks.db")
 }
 
-func RunMigrations(db *sql.DB) error {
-	dir, err := os.Getwd()
+func NewStorage() (*Storage, error) {
+	if err := migrateSchema(nil); err != nil {
+		return nil, fmt.Errorf("failed to perform migrations: %w", err)
+	}
+	db, err := sql.Open("sqlite", getDataSource())
 	if err != nil {
-		return fmt.Errorf("could not get working directory: %w", err)
+		return nil, fmt.Errorf("open sqlite connection: %w", err)
 	}
 
-	migrationsPath := filepath.Join(dir, "migrations")
+	return &Storage{db: db}, nil
+}
 
-	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
+func migrateSchema(nSteps *int) error {
+	db, err := sql.Open("sqlite", getDataSource())
 	if err != nil {
-		return fmt.Errorf("could not create migration driver: %w", err)
+		return fmt.Errorf("open sqlite connection: %w", err)
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://"+migrationsPath,
-		"sqlite3",
-		driver,
+	migrateDriver, err := sqlite.WithInstance(db, &sqlite.Config{
+		MigrationsTable: "migrations",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create migration driver: %w", err)
+	}
+	srcDriver, err := iofs.New(migrationsFs, "migrations")
+	if err != nil {
+		return fmt.Errorf("failed to create migration source driver: %w", err)
+	}
+	preparedMigrations, err := migrate.NewWithInstance(
+		"iofs",
+		srcDriver,
+		"",
+		migrateDriver,
 	)
 	if err != nil {
-		return fmt.Errorf("could not create migrate instance: %w", err)
+		return fmt.Errorf("failed to create migration tooling instance: %w", err)
+	}
+	defer func() {
+		preparedMigrations.Close()
+		db.Close()
+	}()
+	if nSteps != nil {
+		fmt.Printf("stepping migrations %d...\n", *nSteps)
+		err = preparedMigrations.Steps(*nSteps)
+	} else {
+		err = preparedMigrations.Up()
 	}
 
-	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return fmt.Errorf("could not apply migrations: %w", err)
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
 
+	log.Println("Successfully applied db migrations")
 	return nil
 }
+
 func (s Storage) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
 	const op = "storage.sqlite.task.get_all"
 
-	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at FROM tasks`)
+	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at, description, tags FROM tasks`)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -81,7 +115,17 @@ func (s Storage) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
 	var tasks []domain.Task
 	for rows.Next() {
 		var task domain.Task
-		err := rows.Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.DueDate, &task.CreatedAt, &task.ModifiedAt)
+		err := rows.Scan(
+			&task.ID,
+			&task.Title,
+			&task.Status,
+			&task.Priority,
+			&task.DueDate,
+			&task.CreatedAt,
+			&task.ModifiedAt,
+			&task.Description,
+			&task.Tags,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -94,13 +138,23 @@ func (s Storage) GetAllTasks(ctx context.Context) ([]domain.Task, error) {
 func (s Storage) GetTaskByID(ctx context.Context, id string) (domain.Task, error) {
 	const op = "storage.sqlite.task.get_by_id"
 
-	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at  FROM tasks WHERE id = ?`)
+	stmt, err := s.db.Prepare(`SELECT id, title, status, priority, due_date, created_at, modified_at, description, tags  FROM tasks WHERE id = ?`)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	var task domain.Task
-	err = stmt.QueryRowContext(ctx, id).Scan(&task.ID, &task.Title, &task.Status, &task.Priority, &task.DueDate, &task.CreatedAt, &task.ModifiedAt)
+	err = stmt.QueryRowContext(ctx, id).Scan(
+		&task.ID,
+		&task.Title,
+		&task.Status,
+		&task.Priority,
+		&task.DueDate,
+		&task.CreatedAt,
+		&task.ModifiedAt,
+		&task.Description,
+		&task.Tags,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Task{}, fmt.Errorf("%s: %w", op, domain.ErrTaskNotFound)
@@ -119,7 +173,16 @@ func (s Storage) CreateTask(ctx context.Context, task domain.Task) (domain.Task,
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = stmt.ExecContext(ctx, task.ID, task.Title, task.Status, task.Priority, task.DueDate, task.CreatedAt, task.ModifiedAt)
+	_, err = stmt.ExecContext(
+		ctx,
+		task.ID,
+		task.Title,
+		task.Status,
+		task.Priority,
+		task.DueDate,
+		task.CreatedAt,
+		task.ModifiedAt,
+	)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -130,12 +193,22 @@ func (s Storage) CreateTask(ctx context.Context, task domain.Task) (domain.Task,
 func (s Storage) UpdateTask(ctx context.Context, task domain.Task) (domain.Task, error) {
 	const op = "storage.sqlite.task.update"
 
-	stmt, err := s.db.Prepare(`UPDATE tasks SET title = ?, status = ?, priority = ?, due_date = ?, modified_at = ? WHERE id = ?`)
+	stmt, err := s.db.Prepare(`UPDATE tasks SET title = ?, status = ?, priority = ?, due_date = ?, modified_at = ?,description = ?, tags =? WHERE id = ?`)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmt.ExecContext(ctx, task.Title, task.Status, task.Priority, task.DueDate, time.Now(), task.ID)
+	res, err := stmt.ExecContext(
+		ctx,
+		task.Title,
+		task.Status,
+		task.Priority,
+		task.DueDate,
+		time.Now(),
+		task.Description,
+		task.Tags.Value(),
+		task.ID,
+	)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("%s: %w", op, err)
 	}
